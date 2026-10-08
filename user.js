@@ -8,6 +8,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 
+// HTMLの部品を取得
+
 const noticeList =
   document.getElementById("noticeList");
 
@@ -21,7 +23,9 @@ const reloadButton =
 
 async function showNotices() {
 
-  noticeList.innerHTML = "";
+  noticeList.innerHTML = `
+    <p>お知らせを読み込んでいます...</p>
+  `;
 
   try {
 
@@ -38,6 +42,8 @@ async function showNotices() {
       await getDocs(q);
 
 
+    // お知らせがない場合
+
     if (snapshot.empty) {
 
       noticeList.innerHTML = `
@@ -49,10 +55,16 @@ async function showNotices() {
     }
 
 
+    // お知らせを表示
+
+    noticeList.innerHTML = "";
+
+
     snapshot.forEach(function(docData) {
 
       const notice =
         docData.data();
+
 
       const newNotice =
         document.createElement("div");
@@ -64,15 +76,15 @@ async function showNotices() {
       newNotice.innerHTML = `
 
         <p class="date">
-          ${notice.date}
+          ${notice.date || ""}
         </p>
 
         <h3>
-          ${notice.title}
+          ${notice.title || ""}
         </h3>
 
         <p>
-          ${notice.content}
+          ${notice.content || ""}
         </p>
 
       `;
@@ -85,7 +97,11 @@ async function showNotices() {
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "お知らせの読み込みエラー:",
+      error
+    );
+
 
     noticeList.innerHTML = `
       <p>
@@ -112,6 +128,8 @@ reloadButton.addEventListener(
 );
 
 
-// 最初に表示
+// =================================
+// ページを開いたときに表示
+// =================================
 
 showNotices();
