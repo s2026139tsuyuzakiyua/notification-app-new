@@ -30,93 +30,166 @@ const adminNoticeList =
 
 
 // =================================
-// お知らせを表示
+// 管理者側のお知らせを表示
 // =================================
 
 async function showAdminNotices() {
 
-  adminNoticeList.innerHTML = "";
-
-  const noticesRef =
-    collection(db, "notices");
-
-  const q =
-    query(
-      noticesRef,
-      orderBy("date", "desc")
-    );
-
-  const snapshot =
-    await getDocs(q);
+  adminNoticeList.innerHTML = `
+    <p>読み込んでいます...</p>
+  `;
 
 
-  snapshot.forEach(function(docData) {
+  try {
 
-    const notice =
-      docData.data();
+    const noticesRef =
+      collection(db, "notices");
 
-    const newNotice =
-      document.createElement("div");
+    const q =
+      query(
+        noticesRef,
+        orderBy("date", "desc")
+      );
 
-    newNotice.className = "notice";
-
-
-    newNotice.innerHTML = `
-
-      <p class="date">
-        ${notice.date}
-      </p>
-
-      <h3>
-        ${notice.title}
-      </h3>
-
-      <p>
-        ${notice.content}
-      </p>
-
-      <button
-        class="deleteButton"
-        data-id="${docData.id}"
-      >
-        このお知らせを削除
-      </button>
-
-    `;
+    const snapshot =
+      await getDocs(q);
 
 
-    adminNoticeList.appendChild(newNotice);
-
-  });
+    adminNoticeList.innerHTML = "";
 
 
-  // 削除ボタン
+    if (snapshot.empty) {
 
-  const deleteButtons =
-    document.querySelectorAll(".deleteButton");
+      adminNoticeList.innerHTML = `
+        <p>まだお知らせはありません。</p>
+      `;
 
+      return;
 
-  deleteButtons.forEach(function(button) {
-
-    button.addEventListener(
-      "click",
-      async function() {
-
-        const id =
-          button.dataset.id;
+    }
 
 
-        await deleteDoc(
-          doc(db, "notices", id)
+    snapshot.forEach(function(docData) {
+
+      const notice =
+        docData.data();
+
+
+      const newNotice =
+        document.createElement("div");
+
+      newNotice.className =
+        "notice";
+
+
+      newNotice.innerHTML = `
+
+        <p class="date">
+          ${notice.date || ""}
+        </p>
+
+        <h3>
+          ${notice.title || ""}
+        </h3>
+
+        <p>
+          ${notice.content || ""}
+        </p>
+
+        <button
+          class="deleteButton"
+          data-id="${docData.id}"
+        >
+          このお知らせを削除
+        </button>
+
+      `;
+
+
+      adminNoticeList.appendChild(newNotice);
+
+    });
+
+
+    // 削除ボタン
+
+    const deleteButtons =
+      document.querySelectorAll(
+        ".deleteButton"
+      );
+
+
+    deleteButtons.forEach(
+      function(button) {
+
+        button.addEventListener(
+          "click",
+          async function() {
+
+            const id =
+              button.dataset.id;
+
+
+            const result =
+              confirm(
+                "このお知らせを削除しますか？"
+              );
+
+
+            if (!result) {
+              return;
+            }
+
+
+            try {
+
+              await deleteDoc(
+                doc(
+                  db,
+                  "notices",
+                  id
+                )
+              );
+
+
+              message.textContent =
+                "お知らせを削除しました。";
+
+
+              showAdminNotices();
+
+
+            } catch (error) {
+
+              console.error(error);
+
+              message.textContent =
+                "削除できませんでした。";
+
+            }
+
+          }
         );
-
-
-        showAdminNotices();
 
       }
     );
 
-  });
+
+  } catch (error) {
+
+    console.error(
+      "管理者側の読み込みエラー:",
+      error
+    );
+
+
+    adminNoticeList.innerHTML = `
+      <p>
+        お知らせを読み込めませんでした。
+      </p>
+    `;
+
+  }
 
 }
 
@@ -130,11 +203,13 @@ sendButton.addEventListener(
   async function() {
 
     const titleText =
-      title.value;
+      title.value.trim();
 
     const contentText =
-      content.value;
+      content.value.trim();
 
+
+    // 入力チェック
 
     if (
       titleText === "" ||
@@ -149,40 +224,62 @@ sendButton.addEventListener(
     }
 
 
-    // Firestoreに保存
+    try {
 
-    await addDoc(
-      collection(db, "notices"),
-      {
+      // Firestoreに保存
 
-        title: titleText,
+      await addDoc(
+        collection(db, "notices"),
+        {
 
-        content: contentText,
+          title: titleText,
 
-        date:
-          new Date().toLocaleDateString("ja-JP")
+          content: contentText,
 
-      }
-    );
+          date:
+            new Date().toLocaleDateString(
+              "ja-JP"
+            )
 
-
-    message.textContent =
-      "お知らせを送信しました！";
-
-
-    title.value = "";
-
-    content.value = "";
+        }
+      );
 
 
-    // 一覧を更新
+      message.textContent =
+        "お知らせを送信しました！";
 
-    showAdminNotices();
+
+      // 入力欄を空にする
+
+      title.value = "";
+
+      content.value = "";
+
+
+      // 一覧を更新
+
+      showAdminNotices();
+
+
+    } catch (error) {
+
+      console.error(
+        "送信エラー:",
+        error
+      );
+
+
+      message.textContent =
+        "お知らせを送信できませんでした。";
+
+    }
 
   }
 );
 
 
+// =================================
 // 最初に表示
+// =================================
 
 showAdminNotices();
