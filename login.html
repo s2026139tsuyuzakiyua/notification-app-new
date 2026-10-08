@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>管理者ログイン</title>
+
+  <link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body>
+
+  <header>
+
+    <h1>○○ショップ</h1>
+
+    <p>管理者ログイン</p>
+
+  </header>
+
+
+  <main>
+
+    <section class="admin">
+
+      <h2>管理者ログイン</h2>
+
+
+      <label for="password">
+        パスワード
+      </label>
+
+
+      <input
+        type="password"
+        id="password"
+        placeholder="パスワード"
+      >
+
+
+      <button id="loginButton">
+        ログイン
+      </button>
+
+
+      <p id="message"></p>
+
+    </section>
+
+  </main>
+
+
+  <script>
+
+    const loginButton =
+      document.getElementById("loginButton");
+
+
+    const message =
+      document.getElementById("message");
+
+
+    loginButton.addEventListener("click", function() {
+
+      const password =
+        document.getElementById("password").value;
+
+
+      if (password === "1234") {
+
+        location.href = "admin.html";
+
+      } else {
+
+        message.textContent =
+          "パスワードが違います。";
+
+      }
+
+    });
+
+  </script>
+
+</body>
+
+</html>

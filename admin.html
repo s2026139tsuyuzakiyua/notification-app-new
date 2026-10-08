@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>管理者画面</title>
+
+  <link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body>
+
+  <header>
+
+    <h1>○○ショップ</h1>
+
+    <p>管理者画面</p>
+
+  </header>
+
+
+  <main>
+
+    <!-- お知らせ作成 -->
+
+    <section class="admin">
+
+      <h2>お知らせを作成</h2>
+
+
+      <label for="title">
+        タイトル
+      </label>
+
+      <input
+        type="text"
+        id="title"
+        placeholder="例：新商品のお知らせ"
+      >
+
+
+      <label for="content">
+        内容
+      </label>
+
+      <textarea
+        id="content"
+        placeholder="お知らせの内容を入力してください"
+      ></textarea>
+
+
+      <label for="image">
+        写真
+      </label>
+
+      <input
+        type="file"
+        id="image"
+        accept="image/*"
+      >
+
+
+      <button id="sendButton">
+        お知らせを送信
+      </button>
+
+
+      <p id="message"></p>
+
+    </section>
+
+
+    <!-- お知らせ一覧 -->
+
+    <section>
+
+      <h2>送信したお知らせ</h2>
+
+      <div id="adminNoticeList">
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <footer>
+
+    <p>管理者専用ページ</p>
+
+  </footer>
+
+
+  <script type="module" src="admin.js"></script>
+
+</body>
+
+</html>
