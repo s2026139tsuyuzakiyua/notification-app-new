@@ -5,7 +5,10 @@
 
   <meta charset="UTF-8">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>管理者ログイン</title>
 
@@ -59,31 +62,41 @@
   <script>
 
     const loginButton =
-      document.getElementById("loginButton");
+      document.getElementById(
+        "loginButton"
+      );
 
 
     const message =
-      document.getElementById("message");
+      document.getElementById(
+        "message"
+      );
 
 
-    loginButton.addEventListener("click", function() {
+    loginButton.addEventListener(
+      "click",
+      function() {
 
-      const password =
-        document.getElementById("password").value;
+        const password =
+          document.getElementById(
+            "password"
+          ).value;
 
 
-      if (password === "1234") {
+        if (password === "1234") {
 
-        location.href = "admin.html";
+          location.href =
+            "admin.html";
 
-      } else {
+        } else {
 
-        message.textContent =
-          "パスワードが違います。";
+          message.textContent =
+            "パスワードが違います。";
+
+        }
 
       }
-
-    });
+    );
 
   </script>
 
