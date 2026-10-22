@@ -1,4 +1,5 @@
 
+
 import { db } from "./firebase-config.js";
 
 import {
@@ -12,15 +13,14 @@ const reloadButton = document.getElementById("reloadButton");
 
 // お知らせを表示
 async function showNotices() {
-  noticeList.innerHTML = "<p>お知らせを読み込んでいます...</p>";
+  noticeList.textContent = "お知らせを読み込んでいます...";
 
   try {
     const noticesRef = collection(db, "notices");
     const snapshot = await getDocs(noticesRef);
 
-    // お知らせがない場合
     if (snapshot.empty) {
-      noticeList.innerHTML = "<p>現在、お知らせはありません。</p>";
+      noticeList.textContent = "現在、お知らせはありません。";
       return;
     }
 
@@ -30,7 +30,7 @@ async function showNotices() {
       ...docData.data()
     }));
 
-    // 送信時刻が新しい順に並べる
+    // 新しいお知らせを先に表示
     notices.sort((a, b) => {
       const timeA = a.createdAt?.toMillis?.() ?? 0;
       const timeB = b.createdAt?.toMillis?.() ?? 0;
@@ -39,14 +39,13 @@ async function showNotices() {
         return timeB - timeA;
       }
 
-      // 送信時刻のない古い通知は日付で並べる
       return (b.date || "").localeCompare(a.date || "");
     });
 
     // 一覧を空にする
-    noticeList.innerHTML = "";
+    noticeList.replaceChildren();
 
-    // お知らせを表示
+    // お知らせを1件ずつ表示
     notices.forEach((notice) => {
       const newNotice = document.createElement("div");
       newNotice.className = "notice";
@@ -67,18 +66,41 @@ async function showNotices() {
         contentElement
       );
 
+      // 画像URLが保存されている場合に画像を表示
+      if (notice.imageUrl) {
+        const image = document.createElement("img");
+
+        image.src = notice.imageUrl;
+        image.alt = notice.title || "お知らせの画像";
+        image.style.display = "block";
+        image.style.maxWidth = "100%";
+        image.style.height = "auto";
+        image.style.marginTop = "10px";
+        image.style.borderRadius = "8px";
+        image.loading = "lazy";
+
+        // 画像の読み込みに失敗した場合
+        image.addEventListener("error", () => {
+          image.alt = "画像を読み込めませんでした";
+          image.style.display = "none";
+          console.error("画像の読み込みに失敗:", notice.imageUrl);
+        });
+
+        newNotice.appendChild(image);
+      }
+
       noticeList.appendChild(newNotice);
     });
 
   } catch (error) {
     console.error("お知らせの読み込みエラー:", error);
 
-    noticeList.innerHTML =
-      "<p>お知らせを読み込めませんでした。時間をおいて再度お試しください。</p>";
+    noticeList.textContent =
+      "お知らせを読み込めませんでした。時間をおいて再度お試しください。";
   }
 }
 
-// 更新ボタンを押したとき
+// 更新ボタン
 reloadButton.addEventListener("click", showNotices);
 
 // ページを開いたとき
