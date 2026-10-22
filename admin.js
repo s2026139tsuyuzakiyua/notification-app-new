@@ -17,6 +17,48 @@ const sendButton = document.getElementById("sendButton");
 const message = document.getElementById("message");
 const adminNoticeList = document.getElementById("adminNoticeList");
 
+const imageUploadButton = document.getElementById("imageUploadButton");
+const imageUploadMessage = document.getElementById("imageUploadMessage");
+const imagePreview = document.getElementById("imagePreview");
+
+// Cloudinaryでアップロードした画像のURL
+let uploadedImageUrl = "";
+
+// Cloudinaryの画像アップロード設定
+const imageWidget = cloudinary.createUploadWidget(
+  {
+    cloudName: "m3vaioqa",
+    uploadPreset: "notice_images",
+    sources: ["local", "camera"],
+    multiple: false,
+    maxFileSize: 5000000,
+    clientAllowedFormats: ["jpg", "jpeg", "png", "webp"]
+  },
+  (error, result) => {
+    if (error) {
+      console.error("画像のアップロードエラー:", error);
+      imageUploadMessage.textContent =
+        "画像をアップロードできませんでした。";
+      return;
+    }
+
+    if (result && result.event === "success") {
+      uploadedImageUrl = result.info.secure_url;
+
+      imagePreview.src = uploadedImageUrl;
+      imagePreview.style.display = "block";
+
+      imageUploadMessage.textContent =
+        "画像をアップロードしました。";
+    }
+  }
+);
+
+// 画像選択ボタン
+imageUploadButton.addEventListener("click", () => {
+  imageWidget.open();
+});
+
 // 通知一覧を表示
 async function showAdminNotices() {
   if (!adminNoticeList) return;
@@ -24,10 +66,8 @@ async function showAdminNotices() {
   adminNoticeList.textContent = "通知を読み込んでいます...";
 
   try {
-    const noticesRef = collection(db, "notices");
-    const snapshot = await getDocs(noticesRef);
+    const snapshot = await getDocs(collection(db, "notices"));
 
-    // 新しい通知を先に表示する
     const notices = snapshot.docs.map((item) => ({
       id: item.id,
       ...item.data()
@@ -41,7 +81,6 @@ async function showAdminNotices() {
         return timeB - timeA;
       }
 
-      // 送信時刻がない古い通知は、日付で並べる
       return (b.date || "").localeCompare(a.date || "");
     });
 
@@ -66,13 +105,24 @@ async function showAdminNotices() {
       const contentElement = document.createElement("p");
       contentElement.textContent = notice.content || "";
 
+      noticeElement.append(dateElement, titleElement, contentElement);
+
+      // 画像がある通知だけ画像を表示
+      if (notice.imageUrl) {
+        const image = document.createElement("img");
+        image.src = notice.imageUrl;
+        image.alt = notice.title || "お知らせの画像";
+        image.style.maxWidth = "100%";
+        image.style.height = "auto";
+        image.loading = "lazy";
+        noticeElement.appendChild(image);
+      }
+
       const deleteButton = document.createElement("button");
       deleteButton.textContent = "削除";
 
       deleteButton.addEventListener("click", async () => {
-        const confirmed = confirm("この通知を削除しますか？");
-
-        if (!confirmed) return;
+        if (!confirm("この通知を削除しますか？")) return;
 
         deleteButton.disabled = true;
 
@@ -86,13 +136,7 @@ async function showAdminNotices() {
         }
       });
 
-      noticeElement.append(
-        dateElement,
-        titleElement,
-        contentElement,
-        deleteButton
-      );
-
+      noticeElement.appendChild(deleteButton);
       adminNoticeList.appendChild(noticeElement);
     });
   } catch (error) {
@@ -120,11 +164,18 @@ sendButton.addEventListener("click", async () => {
       title: titleText,
       content: contentText,
       date: new Date().toLocaleDateString("ja-JP"),
-      createdAt: serverTimestamp()
+      createdAt: serverTimestamp(),
+      imageUrl: uploadedImageUrl
     });
 
     title.value = "";
     content.value = "";
+    uploadedImageUrl = "";
+
+    imagePreview.removeAttribute("src");
+    imagePreview.style.display = "none";
+    imageUploadMessage.textContent = "";
+
     message.textContent = "お知らせを送信しました！";
 
     await showAdminNotices();
